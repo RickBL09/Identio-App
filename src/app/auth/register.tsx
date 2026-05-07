@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 
 import { useAuthActions } from '@/features/auth/hooks/useAuthActions';
 
@@ -15,12 +15,12 @@ export default function RegisterScreen() {
   const onRegister = async () => {
     if (!fullName || !email || !password || !confirmPassword) {
       clearError();
-      setLocalError('Todos los campos son obligatorios.');
+      setLocalError('All fields are required.');
       return;
     }
     if (password !== confirmPassword) {
       clearError();
-      setLocalError('Las contrasenas no coinciden.');
+      setLocalError('Passwords do not match.');
       return;
     }
     setLocalError('');
@@ -31,80 +31,191 @@ export default function RegisterScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Registro</Text>
-      <TextInput
-        value={fullName}
-        onChangeText={setFullName}
-        placeholder="Nombre completo"
-        placeholderTextColor="#8b93a7"
-        style={styles.input}
-      />
-      <TextInput
-        value={email}
-        onChangeText={setEmail}
-        placeholder="email@dominio.com"
-        placeholderTextColor="#8b93a7"
-        style={styles.input}
-        autoCapitalize="none"
-      />
-      <TextInput
-        value={password}
-        onChangeText={setPassword}
-        placeholder="contrasena"
-        placeholderTextColor="#8b93a7"
-        style={styles.input}
-        secureTextEntry
-      />
-      <TextInput
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        placeholder="confirmar contrasena"
-        placeholderTextColor="#8b93a7"
-        style={styles.input}
-        secureTextEntry
-      />
-      {localError ? <Text style={styles.error}>{localError}</Text> : null}
-      {auth.error ? <Text style={styles.error}>{auth.error}</Text> : null}
-      <Pressable style={styles.button} onPress={onRegister} disabled={auth.isLoading}>
-        <Text style={styles.buttonText}>
-          {auth.isLoading ? 'Creando cuenta...' : 'Continuar a enrolamiento'}
-        </Text>
-      </Pressable>
-      <Pressable style={styles.backButton} onPress={() => router.back()}>
-        <Text style={styles.backButtonText}>Volver a login</Text>
-      </Pressable>
-    </View>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Create Account</Text>
+          <Text style={styles.subtitle}>Sign up to get started</Text>
+        </View>
+
+        <View style={styles.card}>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Full Name</Text>
+            <TextInput
+              value={fullName}
+              onChangeText={setFullName}
+              placeholder="Alejandro Toro"
+              placeholderTextColor="#94A3B8"
+              style={styles.input}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              value={email}
+              onChangeText={setEmail}
+              placeholder="you@domain.com"
+              placeholderTextColor="#94A3B8"
+              style={styles.input}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Password</Text>
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              placeholder="••••••••"
+              placeholderTextColor="#94A3B8"
+              style={styles.input}
+              secureTextEntry
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Confirm Password</Text>
+            <TextInput
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              placeholder="••••••••"
+              placeholderTextColor="#94A3B8"
+              style={styles.input}
+              secureTextEntry
+            />
+          </View>
+
+          {localError ? <Text style={styles.error}>{localError}</Text> : null}
+          {auth.error ? <Text style={styles.error}>{auth.error}</Text> : null}
+
+          <Pressable
+            style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+            onPress={onRegister}
+            disabled={auth.isLoading}
+          >
+            <View style={styles.primaryButton}>
+              <Text style={styles.buttonText}>
+                {auth.isLoading ? 'Creating account...' : 'Continue to Enrollment'}
+              </Text>
+            </View>
+          </Pressable>
+
+          <Pressable style={styles.backButton} onPress={() => router.back()}>
+            <Text style={styles.backButtonText}>Back to Login</Text>
+          </Pressable>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#050814',
+    backgroundColor: '#FFFFFF',
+  },
+  scrollContainer: {
+    flexGrow: 1,
     justifyContent: 'center',
     padding: 24,
-    gap: 12,
   },
-  title: { color: '#e9eef7', fontSize: 28, fontWeight: '700', marginBottom: 8 },
-  input: {
-    backgroundColor: '#0d1529',
-    borderColor: '#1d2a4f',
+  header: {
+    marginBottom: 32,
+    maxWidth: 400,
+    alignSelf: 'center',
+    width: '100%',
+  },
+  title: {
+    color: '#0F172A',
+    fontSize: 36,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+    marginBottom: 8,
+  },
+  subtitle: {
+    color: '#64748B',
+    fontSize: 16,
+    fontWeight: '400',
+  },
+  card: {
+    borderRadius: 24,
+    padding: 24,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderRadius: 10,
-    color: '#e9eef7',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
+    maxWidth: 400,
+    alignSelf: 'center',
+    width: '100%',
   },
-  error: { color: '#ff7070' },
+  inputGroup: {
+    marginBottom: 20,
+  },
+  label: {
+    color: '#475569',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: '#F8FAFC',
+    borderColor: '#E2E8F0',
+    borderWidth: 1,
+    borderRadius: 16,
+    color: '#0F172A',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+  },
+  error: {
+    color: '#EF4444',
+    fontSize: 14,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
   button: {
     marginTop: 8,
-    backgroundColor: '#00f5c4',
-    borderRadius: 10,
-    paddingVertical: 12,
-    alignItems: 'center',
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#38BDF8',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
-  buttonText: { color: '#08101f', fontWeight: '700' },
-  backButton: { alignItems: 'center', marginTop: 8 },
-  backButtonText: { color: '#00f5c4' },
-});
+  buttonPressed: {
+    opacity: 0.9,
+    transform: [{ scale: 0.98 }],
+  },
+  primaryButton: {
+    backgroundColor: '#38BDF8',
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 16,
+    letterSpacing: 0.5,
+  },
+  backButton: {
+    alignItems: 'center',
+    marginTop: 20,
+    paddingVertical: 12,
+  },
+  backButtonText: {
+    color: '#38BDF8',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+});

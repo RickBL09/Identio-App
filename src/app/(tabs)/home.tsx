@@ -1,76 +1,115 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useState, useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View, ScrollView } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 
 import { useAppSelector } from '@/store';
 
 export default function HomeScreen() {
   const user = useAppSelector((state) => state.auth.user);
+  const { verified } = useLocalSearchParams<{ verified: string }>();
+  
+  const [isNfcActive, setIsNfcActive] = useState(false);
+  const [currentDate, setCurrentDate] = useState(new Date());
+
+  useEffect(() => {
+    // Update date and time every second
+    const timer = setInterval(() => {
+      setCurrentDate(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (verified === 'true') {
+      setIsNfcActive(true);
+      // Keep NFC active for 90 seconds
+      const timeout = setTimeout(() => {
+        setIsNfcActive(false);
+        router.setParams({ verified: 'false' });
+      }, 90000);
+      return () => clearTimeout(timeout);
+    } else {
+      setIsNfcActive(false);
+    }
+  }, [verified]);
+
+  const formattedDate = currentDate.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: '2-digit',
+    year: 'numeric'
+  }).toUpperCase();
+
+  const formattedTime = currentDate.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  });
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#0A192F', '#020C1B']}
-        style={StyleSheet.absoluteFillObject}
-      />
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text style={styles.greeting}>Hello, {user?.full_name ?? 'User'}</Text>
-          <Text style={styles.subtitle}>Security & Access Overview</Text>
-        </View>
-
-        <View style={styles.balanceCard}>
-          <BlurView intensity={20} tint="light" style={styles.blurContainer}>
-            <Text style={styles.balanceLabel}>Security Status</Text>
-            <Text style={styles.balanceValue}>Protected</Text>
-            <View style={styles.statusIndicator} />
-          </BlurView>
-        </View>
-
-        <Text style={styles.sectionTitle}>Identity Verification</Text>
         
-        <View style={styles.mainActionContainer}>
+        <View style={styles.header}>
+          <Text style={styles.dateText}>{formattedDate}</Text>
+          <Text style={styles.timeText}>{formattedTime}</Text>
+        </View>
+
+        <View style={styles.idCardContainer}>
+          <View style={styles.profileImageContainer}>
+            <Image 
+              source={require('@/assets/images/profile.svg')} 
+              style={styles.profileIconPlaceholder}
+              tintColor="#64748B"
+              contentFit="cover"
+            />
+          </View>
+          
+          <Text style={styles.userName}>{user?.full_name?.toUpperCase() ?? 'ALEJANDRO TORO PINEDO'}</Text>
+          <Text style={styles.userId}>ID 200179498</Text>
+
+          <View style={styles.roleBanner}>
+            <Text style={styles.roleText}>ESTUDIANTE</Text>
+          </View>
+
+          <View style={styles.universityContainer}>
+            <Text style={styles.universityText}>UNIVERSIDAD</Text>
+            <Text style={styles.universityTextBold}>DEL NORTE</Text>
+          </View>
+        </View>
+
+        <View style={styles.actionSection}>
+          {isNfcActive ? (
+            <View style={styles.instructionContainer}>
+              <Text style={styles.instructionText}>
+                Please hold your device near the NFC sensor to gain access.
+              </Text>
+            </View>
+          ) : null}
+
           <Pressable 
             style={({ pressed }) => [
               styles.mainActionButton, 
-              pressed && styles.mainActionButtonPressed
+              pressed && styles.mainActionButtonPressed,
+              isNfcActive && styles.mainActionButtonActive
             ]} 
-            onPress={() => router.push('/biometric/verify')}
+            onPress={() => {
+              if (!isNfcActive) {
+                router.push('/biometric/verify');
+              }
+            }}
           >
-            <LinearGradient
-              colors={['rgba(56, 189, 248, 0.2)', 'rgba(37, 99, 235, 0.2)']}
-              style={styles.mainActionGradient}
-            >
-              <Image 
-                source={require('@/assets/images/facial_recognition.svg')} 
-                style={styles.facialIcon}
-                contentFit="contain"
-                tintColor="#38BDF8"
-              />
-            </LinearGradient>
-          </Pressable>
-          <Text style={styles.mainActionText}>Tap to Verify Identity</Text>
-        </View>
-
-        <Text style={[styles.sectionTitle, { marginTop: 24 }]}>Other Actions</Text>
-
-        <View style={styles.actionsGrid}>
-          <Pressable 
-            style={({ pressed }) => [styles.actionCard, pressed && styles.actionCardPressed]} 
-            onPress={() => router.push('/nfc/scan')}
-          >
-            <LinearGradient
-              colors={['rgba(56, 189, 248, 0.1)', 'rgba(37, 99, 235, 0.1)']}
-              style={styles.actionGradient}
-            >
-              <Text style={styles.actionTitle}>NFC Scan</Text>
-              <Text style={styles.actionDesc}>Physical Access</Text>
-            </LinearGradient>
+            <Image 
+              source={isNfcActive ? require('@/assets/images/nfc.svg') : require('@/assets/images/facial_recognition.svg')} 
+              style={styles.actionIcon}
+              contentFit="contain"
+              tintColor={isNfcActive ? '#FFFFFF' : '#38BDF8'}
+            />
           </Pressable>
         </View>
-        
+
         {/* Spacer for bottom tab bar */}
         <View style={{ height: 100 }} />
       </ScrollView>
@@ -81,138 +120,140 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
   },
   scrollContainer: {
     padding: 24,
     paddingTop: 60,
+    alignItems: 'center',
+    flexGrow: 1,
   },
   header: {
-    marginBottom: 32,
-  },
-  greeting: { 
-    color: '#FFFFFF', 
-    fontSize: 28, 
-    fontWeight: '800',
-    letterSpacing: -0.5,
-  },
-  subtitle: { 
-    color: '#94A3B8', 
-    fontSize: 16, 
-    marginTop: 4,
-    fontWeight: '400',
-  },
-  balanceCard: {
-    borderRadius: 24,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    marginBottom: 32,
-  },
-  blurContainer: {
-    padding: 24,
-    position: 'relative',
-  },
-  balanceLabel: {
-    color: '#CBD5E1',
-    fontSize: 14,
-    fontWeight: '500',
-    marginBottom: 8,
-  },
-  balanceValue: {
-    color: '#FFFFFF',
-    fontSize: 32,
-    fontWeight: '800',
-    letterSpacing: -1,
-  },
-  statusIndicator: {
-    position: 'absolute',
-    top: 24,
-    right: 24,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#10B981',
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  sectionTitle: {
-    color: '#F8FAFC',
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 16,
-    letterSpacing: -0.5,
-    textAlign: 'center',
-  },
-  mainActionContainer: {
     alignItems: 'center',
-    marginVertical: 16,
+    marginBottom: 40,
   },
-  mainActionButton: {
+  dateText: { 
+    color: '#64748B', 
+    fontSize: 14, 
+    fontWeight: '500',
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  timeText: { 
+    color: '#38BDF8', 
+    fontSize: 20, 
+    fontWeight: '700',
+  },
+  idCardContainer: {
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 40,
+  },
+  profileImageContainer: {
     width: 140,
     height: 140,
     borderRadius: 70,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(15, 23, 42, 0.8)',
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
+    borderWidth: 4,
+    borderColor: '#FFFFFF',
+  },
+  profileIconPlaceholder: {
+    width: 60,
+    height: 60,
+  },
+  userName: {
+    color: '#0F172A',
+    fontSize: 22,
+    fontWeight: '800',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  userId: {
+    color: '#64748B',
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 24,
+  },
+  roleBanner: {
+    backgroundColor: '#38BDF8',
+    width: '100%',
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  roleText: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '800',
+    letterSpacing: 2,
+  },
+  universityContainer: {
+    alignItems: 'center',
+  },
+  universityText: {
+    color: '#334155',
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 1,
+  },
+  universityTextBold: {
+    color: '#0F172A',
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  actionSection: {
+    alignItems: 'center',
+    marginTop: 'auto',
+  },
+  instructionContainer: {
+    backgroundColor: '#F0F9FF',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginBottom: 24,
     borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.4)',
+    borderColor: '#BAE6FD',
+  },
+  instructionText: {
+    color: '#0369A1',
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  mainActionButton: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#38BDF8',
+    justifyContent: 'center',
+    alignItems: 'center',
     shadowColor: '#38BDF8',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 10,
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  mainActionButtonActive: {
+    backgroundColor: '#38BDF8',
   },
   mainActionButtonPressed: {
     opacity: 0.8,
     transform: [{ scale: 0.95 }],
   },
-  mainActionGradient: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  facialIcon: {
-    width: 64,
-    height: 64,
-  },
-  mainActionText: {
-    marginTop: 16,
-    color: '#38BDF8',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  actionsGrid: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  actionCard: {
-    flex: 1,
-    borderRadius: 20,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
-    borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.2)',
-  },
-  actionCardPressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.98 }],
-  },
-  actionGradient: {
-    padding: 20,
-    alignItems: 'flex-start',
-  },
-  actionTitle: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  actionDesc: {
-    color: '#64748B',
-    fontSize: 12,
-    fontWeight: '500',
+  actionIcon: {
+    width: 36,
+    height: 36,
   },
 });
+

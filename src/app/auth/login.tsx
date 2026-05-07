@@ -49,11 +49,6 @@ export default function LoginScreen() {
       style={styles.container} 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <LinearGradient
-        colors={['#0A192F', '#020C1B']}
-        style={StyleSheet.absoluteFillObject}
-      />
-      
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         <Animated.View style={[styles.content, { opacity: fadeAnim, transform: [{ translateY: translateYAnim }] }]}>
           <View style={styles.header}>
@@ -61,62 +56,55 @@ export default function LoginScreen() {
             <Text style={styles.subtitle}>Sign in to continue</Text>
           </View>
 
-          <View style={styles.glassCard}>
-            <BlurView intensity={20} tint="light" style={styles.blurContainer}>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Email</Text>
-                <TextInput
-                  value={email}
-                  onChangeText={setEmail}
-                  placeholder="you@domain.com"
-                  placeholderTextColor="#64748B"
-                  style={styles.input}
-                  autoCapitalize="none"
-                  keyboardType="email-address"
-                />
-              </View>
+          <View style={styles.card}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Email</Text>
+              <TextInput
+                value={email}
+                onChangeText={setEmail}
+                placeholder="you@domain.com"
+                placeholderTextColor="#94A3B8"
+                style={styles.input}
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
+            </View>
 
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Password</Text>
-                <TextInput
-                  value={password}
-                  onChangeText={setPassword}
-                  placeholder="••••••••"
-                  placeholderTextColor="#64748B"
-                  style={styles.input}
-                  secureTextEntry
-                />
-              </View>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Password</Text>
+              <TextInput
+                value={password}
+                onChangeText={setPassword}
+                placeholder="••••••••"
+                placeholderTextColor="#94A3B8"
+                style={styles.input}
+                secureTextEntry
+              />
+            </View>
 
-              {auth.error ? <Text style={styles.error}>{auth.error}</Text> : null}
+            {auth.error ? <Text style={styles.error}>{auth.error}</Text> : null}
 
-              <Pressable 
-                style={({ pressed }) => [
-                  styles.button,
-                  pressed && styles.buttonPressed
-                ]} 
-                onPress={onLogin} 
-                disabled={auth.isLoading}
-              >
-                <LinearGradient
-                  colors={['#3B82F6', '#2563EB']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.gradientButton}
-                >
-                  <Text style={styles.buttonText}>{auth.isLoading ? 'Authenticating...' : 'Sign In'}</Text>
-                </LinearGradient>
-              </Pressable>
-              
-              <View style={styles.footerLinks}>
-                <Link href="/auth/register" style={styles.link}>
-                  Create an account
-                </Link>
-                <Link href="/biometric/verify" style={styles.link}>
-                  Face ID
-                </Link>
+            <Pressable 
+              style={({ pressed }) => [
+                styles.button,
+                pressed && styles.buttonPressed
+              ]} 
+              onPress={onLogin} 
+              disabled={auth.isLoading}
+            >
+              <View style={styles.primaryButton}>
+                <Text style={styles.buttonText}>{auth.isLoading ? 'Authenticating...' : 'Sign In'}</Text>
               </View>
-            </BlurView>
+            </Pressable>
+            
+            <View style={styles.footerLinks}>
+              <Link href="/auth/register" style={styles.link}>
+                Create an account
+              </Link>
+              <Link href="/biometric/verify" style={styles.link}>
+                Face ID
+              </Link>
+            </View>
           </View>
 
           <View style={styles.hintContainer}>
@@ -133,6 +121,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
   },
   scrollContainer: {
     flexGrow: 1,
@@ -150,42 +139,44 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   title: { 
-    color: '#FFFFFF', 
+    color: '#0F172A', 
     fontSize: 36, 
     fontWeight: '800',
     letterSpacing: -0.5,
     marginBottom: 8,
   },
   subtitle: { 
-    color: '#94A3B8', 
+    color: '#64748B', 
     fontSize: 16,
     fontWeight: '400',
   },
-  glassCard: {
+  card: {
     borderRadius: 24,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  blurContainer: {
     padding: 24,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
   },
   inputGroup: {
     marginBottom: 20,
   },
   label: {
-    color: '#CBD5E1',
+    color: '#475569',
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
     marginBottom: 8,
   },
   input: {
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
-    borderColor: 'rgba(56, 189, 248, 0.2)',
+    backgroundColor: '#F8FAFC',
+    borderColor: '#E2E8F0',
     borderWidth: 1,
     borderRadius: 16,
-    color: '#FFFFFF',
+    color: '#0F172A',
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
@@ -194,7 +185,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#3B82F6',
+    shadowColor: '#38BDF8',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -204,7 +195,8 @@ const styles = StyleSheet.create({
     opacity: 0.9,
     transform: [{ scale: 0.98 }],
   },
-  gradientButton: {
+  primaryButton: {
+    backgroundColor: '#38BDF8',
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
@@ -237,7 +229,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   hintText: { 
-    color: '#475569', 
+    color: '#94A3B8', 
     fontSize: 12,
   },
 });

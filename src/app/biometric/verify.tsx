@@ -14,6 +14,11 @@ export default function VerifyBiometricScreen() {
   const onVerify = async () => {
     const response = await verify();
     setResult(`${response.event_type} (score ${response.confidence_score.toFixed(2)})`);
+    
+    // After short delay, go back to home with verified state
+    setTimeout(() => {
+      router.replace({ pathname: '/(tabs)/home', params: { verified: 'true' } });
+    }, 1500);
   };
 
   if (!permission) {
@@ -41,11 +46,6 @@ export default function VerifyBiometricScreen() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#0A192F', '#020C1B']}
-        style={StyleSheet.absoluteFillObject}
-      />
-      
       <View style={styles.header}>
         <Text style={styles.title}>Facial Verification</Text>
         <Text style={styles.subtitle}>Please position your face within the frame</Text>
@@ -70,16 +70,11 @@ export default function VerifyBiometricScreen() {
           onPress={onVerify} 
           disabled={isLoading}
         >
-          <LinearGradient
-            colors={['#38BDF8', '#2563EB']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.gradientButton}
-          >
+          <View style={styles.gradientButton}>
             <Text style={styles.primaryButtonText}>
               {isLoading ? 'Scanning...' : 'Scan Face'}
             </Text>
-          </LinearGradient>
+          </View>
         </Pressable>
         
         <Pressable style={styles.secondaryButton} onPress={() => router.back()}>
@@ -93,7 +88,7 @@ export default function VerifyBiometricScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A192F',
+    backgroundColor: '#FFFFFF',
   },
   header: {
     padding: 24,
@@ -101,17 +96,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: { 
-    color: '#FFFFFF', 
+    color: '#0F172A', 
     fontSize: 24, 
-    fontWeight: '700',
+    fontWeight: '800',
     marginBottom: 8,
   },
   subtitle: {
-    color: '#94A3B8',
+    color: '#64748B',
     fontSize: 16,
   },
   text: { 
-    color: '#94A3B8', 
+    color: '#64748B', 
     textAlign: 'center', 
     marginBottom: 24 
   },
@@ -121,8 +116,9 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     overflow: 'hidden',
     borderWidth: 2,
-    borderColor: 'rgba(56, 189, 248, 0.3)',
+    borderColor: '#38BDF8',
     position: 'relative',
+    backgroundColor: '#F8FAFC',
   },
   camera: {
     flex: 1,
@@ -131,12 +127,12 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(255,255,255,0.2)',
   },
   frame: {
     width: 250,
     height: 300,
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: '#38BDF8',
     borderRadius: 150,
     borderStyle: 'dashed',
@@ -147,7 +143,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   resultContainer: {
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: '#ECFDF5',
     borderWidth: 1,
     borderColor: '#10B981',
     borderRadius: 12,
@@ -156,8 +152,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   resultText: {
-    color: '#10B981',
-    fontWeight: '600',
+    color: '#059669',
+    fontWeight: '700',
   },
   button: {
     backgroundColor: '#38BDF8',
@@ -174,7 +170,8 @@ const styles = StyleSheet.create({
   primaryButton: {
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#3B82F6',
+    backgroundColor: '#38BDF8',
+    shadowColor: '#38BDF8',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -189,6 +186,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF', 
     fontWeight: '700',
     fontSize: 16,
+    letterSpacing: 0.5,
   },
   buttonPressed: {
     opacity: 0.9,
@@ -197,12 +195,12 @@ const styles = StyleSheet.create({
   secondaryButton: {
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: '#E2E8F0',
     alignItems: 'center',
     paddingVertical: 16,
   },
   secondaryButtonText: { 
-    color: '#94A3B8', 
+    color: '#64748B', 
     fontWeight: '600',
     fontSize: 16,
   },

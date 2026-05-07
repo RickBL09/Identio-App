@@ -18,7 +18,7 @@ export default function TabsLayout() {
           borderRadius: 24,
           height: 64,
           borderWidth: 0,
-          shadowColor: '#38BDF8',
+          shadowColor: '#000',
           shadowOffset: {
             width: 0,
             height: 10,
@@ -28,12 +28,12 @@ export default function TabsLayout() {
         },
         tabBarBackground: () => (
           <View style={styles.blurContainer}>
-            <BlurView tint="dark" intensity={50} style={StyleSheet.absoluteFill} />
+            <BlurView tint="light" intensity={80} style={StyleSheet.absoluteFill} />
             <View style={styles.glassBorder} />
           </View>
         ),
         tabBarActiveTintColor: '#38BDF8',
-        tabBarInactiveTintColor: '#64748B',
+        tabBarInactiveTintColor: '#94A3B8',
         tabBarShowLabel: true,
         tabBarLabelStyle: {
           fontWeight: '600',
@@ -92,13 +92,13 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     borderRadius: 24,
     overflow: 'hidden',
-    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
   },
   glassBorder: {
     ...StyleSheet.absoluteFillObject,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(148, 163, 184, 0.2)',
   }
 });
 
