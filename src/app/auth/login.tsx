@@ -1,6 +1,8 @@
 import { Link, router } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useState, useEffect } from 'react';
+import { Pressable, StyleSheet, Text, TextInput, View, Animated, Easing, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 
 import { MOCK_CREDENTIALS } from '@/mocks/data';
 import { useAuthActions } from '@/features/auth/hooks/useAuthActions';
@@ -9,6 +11,26 @@ export default function LoginScreen() {
   const { auth, login, clearError } = useAuthActions();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const fadeAnim = new Animated.Value(0);
+  const translateYAnim = new Animated.Value(20);
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateYAnim, {
+        toValue: 0,
+        duration: 800,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      })
+    ]).start();
+  }, []);
 
   const onLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -23,84 +45,199 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Iniciar sesion</Text>
-      <Text style={styles.subtitle}>Acceso mock (frontend)</Text>
-
-      <TextInput
-        value={email}
-        onChangeText={setEmail}
-        placeholder="email@dominio.com"
-        placeholderTextColor="#8b93a7"
-        style={styles.input}
-        autoCapitalize="none"
-        keyboardType="email-address"
+    <KeyboardAvoidingView 
+      style={styles.container} 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <LinearGradient
+        colors={['#0A192F', '#020C1B']}
+        style={StyleSheet.absoluteFillObject}
       />
-      <TextInput
-        value={password}
-        onChangeText={setPassword}
-        placeholder="contrasena"
-        placeholderTextColor="#8b93a7"
-        style={styles.input}
-        secureTextEntry
-      />
+      
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <Animated.View style={[styles.content, { opacity: fadeAnim, transform: [{ translateY: translateYAnim }] }]}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Welcome Back</Text>
+            <Text style={styles.subtitle}>Sign in to continue</Text>
+          </View>
 
-      {auth.error ? <Text style={styles.error}>{auth.error}</Text> : null}
+          <View style={styles.glassCard}>
+            <BlurView intensity={20} tint="light" style={styles.blurContainer}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Email</Text>
+                <TextInput
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="you@domain.com"
+                  placeholderTextColor="#64748B"
+                  style={styles.input}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                />
+              </View>
 
-      <Pressable style={styles.button} onPress={onLogin} disabled={auth.isLoading}>
-        <Text style={styles.buttonText}>{auth.isLoading ? 'Entrando...' : 'Entrar'}</Text>
-      </Pressable>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Password</Text>
+                <TextInput
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="••••••••"
+                  placeholderTextColor="#64748B"
+                  style={styles.input}
+                  secureTextEntry
+                />
+              </View>
 
-      <Pressable style={styles.secondaryButton} onPress={() => router.push('/biometric/verify')}>
-        <Text style={styles.secondaryButtonText}>Login facial (placeholder)</Text>
-      </Pressable>
+              {auth.error ? <Text style={styles.error}>{auth.error}</Text> : null}
 
-      <Link href="/auth/register" style={styles.link}>
-        Crear cuenta
-      </Link>
-      <Text style={styles.hint}>
-        Demo: {MOCK_CREDENTIALS.email} / {MOCK_CREDENTIALS.password}
-      </Text>
-    </View>
+              <Pressable 
+                style={({ pressed }) => [
+                  styles.button,
+                  pressed && styles.buttonPressed
+                ]} 
+                onPress={onLogin} 
+                disabled={auth.isLoading}
+              >
+                <LinearGradient
+                  colors={['#3B82F6', '#2563EB']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.gradientButton}
+                >
+                  <Text style={styles.buttonText}>{auth.isLoading ? 'Authenticating...' : 'Sign In'}</Text>
+                </LinearGradient>
+              </Pressable>
+              
+              <View style={styles.footerLinks}>
+                <Link href="/auth/register" style={styles.link}>
+                  Create an account
+                </Link>
+                <Link href="/biometric/verify" style={styles.link}>
+                  Face ID
+                </Link>
+              </View>
+            </BlurView>
+          </View>
+
+          <View style={styles.hintContainer}>
+            <Text style={styles.hintText}>
+              Demo: {MOCK_CREDENTIALS.email} / {MOCK_CREDENTIALS.password}
+            </Text>
+          </View>
+        </Animated.View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#050814',
-    padding: 24,
-    justifyContent: 'center',
-    gap: 12,
   },
-  title: { color: '#e9eef7', fontSize: 28, fontWeight: '700' },
-  subtitle: { color: '#8b93a7', marginBottom: 8 },
-  input: {
-    backgroundColor: '#0d1529',
-    borderColor: '#1d2a4f',
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 24,
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    width: '100%',
+    maxWidth: 400,
+    alignSelf: 'center',
+  },
+  header: {
+    marginBottom: 40,
+  },
+  title: { 
+    color: '#FFFFFF', 
+    fontSize: 36, 
+    fontWeight: '800',
+    letterSpacing: -0.5,
+    marginBottom: 8,
+  },
+  subtitle: { 
+    color: '#94A3B8', 
+    fontSize: 16,
+    fontWeight: '400',
+  },
+  glassCard: {
+    borderRadius: 24,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderWidth: 1,
-    borderRadius: 10,
-    color: '#e9eef7',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  blurContainer: {
+    padding: 24,
+  },
+  inputGroup: {
+    marginBottom: 20,
+  },
+  label: {
+    color: '#CBD5E1',
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    borderColor: 'rgba(56, 189, 248, 0.2)',
+    borderWidth: 1,
+    borderRadius: 16,
+    color: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
   },
   button: {
-    marginTop: 8,
-    backgroundColor: '#00f5c4',
-    borderRadius: 10,
-    paddingVertical: 12,
+    marginTop: 12,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#3B82F6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  buttonPressed: {
+    opacity: 0.9,
+    transform: [{ scale: 0.98 }],
+  },
+  gradientButton: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonText: { 
+    color: '#FFFFFF', 
+    fontWeight: '700',
+    fontSize: 16,
+    letterSpacing: 0.5,
+  },
+  footerLinks: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 24,
+    paddingHorizontal: 8,
+  },
+  link: { 
+    color: '#38BDF8', 
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  error: { 
+    color: '#EF4444',
+    marginBottom: 16,
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  hintContainer: {
+    marginTop: 40,
     alignItems: 'center',
   },
-  buttonText: { color: '#08101f', fontWeight: '700' },
-  secondaryButton: {
-    borderRadius: 10,
-    borderColor: '#2b3d6f',
-    borderWidth: 1,
-    paddingVertical: 12,
-    alignItems: 'center',
+  hintText: { 
+    color: '#475569', 
+    fontSize: 12,
   },
-  secondaryButtonText: { color: '#d3dbec' },
-  error: { color: '#ff7070' },
-  link: { color: '#00f5c4', marginTop: 8 },
-  hint: { color: '#8b93a7', marginTop: 4, fontSize: 12 },
-});
+});
