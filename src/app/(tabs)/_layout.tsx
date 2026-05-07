@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { StyleSheet, View } from 'react-native';
+import { Image } from 'expo-image';
 
 export default function TabsLayout() {
   return (
@@ -43,9 +44,45 @@ export default function TabsLayout() {
           paddingTop: 8,
         }
       }}>
-      <Tabs.Screen name="home" options={{ title: 'Home' }} />
-      <Tabs.Screen name="audit" options={{ title: 'Activity' }} />
-      <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
+      <Tabs.Screen 
+        name="home" 
+        options={{ 
+          title: 'Home',
+          tabBarIcon: ({ color }) => (
+            <Image 
+              source={require('@/assets/images/home.svg')} 
+              style={{ width: 24, height: 24 }} 
+              tintColor={color} 
+            />
+          )
+        }} 
+      />
+      <Tabs.Screen 
+        name="audit" 
+        options={{ 
+          title: 'Activity',
+          tabBarIcon: ({ color }) => (
+            <Image 
+              source={require('@/assets/images/activity.svg')} 
+              style={{ width: 24, height: 24 }} 
+              tintColor={color} 
+            />
+          )
+        }} 
+      />
+      <Tabs.Screen 
+        name="profile" 
+        options={{ 
+          title: 'Profile',
+          tabBarIcon: ({ color }) => (
+            <Image 
+              source={require('@/assets/images/profile.svg')} 
+              style={{ width: 24, height: 24 }} 
+              tintColor={color} 
+            />
+          )
+        }} 
+      />
     </Tabs>
   );
 }
@@ -64,3 +101,4 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.1)',
   }
 });
+

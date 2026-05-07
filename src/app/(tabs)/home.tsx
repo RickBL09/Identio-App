@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
+import { Image } from 'expo-image';
 
 import { useAppSelector } from '@/store';
 
@@ -28,23 +29,34 @@ export default function HomeScreen() {
           </BlurView>
         </View>
 
-        <Text style={styles.sectionTitle}>Quick Actions</Text>
-
-        <View style={styles.actionsGrid}>
+        <Text style={styles.sectionTitle}>Identity Verification</Text>
+        
+        <View style={styles.mainActionContainer}>
           <Pressable 
-            style={({ pressed }) => [styles.actionCard, pressed && styles.actionCardPressed]} 
+            style={({ pressed }) => [
+              styles.mainActionButton, 
+              pressed && styles.mainActionButtonPressed
+            ]} 
             onPress={() => router.push('/biometric/verify')}
           >
             <LinearGradient
-              colors={['rgba(56, 189, 248, 0.1)', 'rgba(37, 99, 235, 0.1)']}
-              style={styles.actionGradient}
+              colors={['rgba(56, 189, 248, 0.2)', 'rgba(37, 99, 235, 0.2)']}
+              style={styles.mainActionGradient}
             >
-              <Text style={styles.actionIcon}>👤</Text>
-              <Text style={styles.actionTitle}>Verify ID</Text>
-              <Text style={styles.actionDesc}>Facial Recognition</Text>
+              <Image 
+                source={require('@/assets/images/facial_recognition.svg')} 
+                style={styles.facialIcon}
+                contentFit="contain"
+                tintColor="#38BDF8"
+              />
             </LinearGradient>
           </Pressable>
+          <Text style={styles.mainActionText}>Tap to Verify Identity</Text>
+        </View>
 
+        <Text style={[styles.sectionTitle, { marginTop: 24 }]}>Other Actions</Text>
+
+        <View style={styles.actionsGrid}>
           <Pressable 
             style={({ pressed }) => [styles.actionCard, pressed && styles.actionCardPressed]} 
             onPress={() => router.push('/nfc/scan')}
@@ -53,7 +65,6 @@ export default function HomeScreen() {
               colors={['rgba(56, 189, 248, 0.1)', 'rgba(37, 99, 235, 0.1)']}
               style={styles.actionGradient}
             >
-              <Text style={styles.actionIcon}>📱</Text>
               <Text style={styles.actionTitle}>NFC Scan</Text>
               <Text style={styles.actionDesc}>Physical Access</Text>
             </LinearGradient>
@@ -134,6 +145,44 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 16,
     letterSpacing: -0.5,
+    textAlign: 'center',
+  },
+  mainActionContainer: {
+    alignItems: 'center',
+    marginVertical: 16,
+  },
+  mainActionButton: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(15, 23, 42, 0.8)',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.4)',
+    shadowColor: '#38BDF8',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 10,
+  },
+  mainActionButtonPressed: {
+    opacity: 0.8,
+    transform: [{ scale: 0.95 }],
+  },
+  mainActionGradient: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  facialIcon: {
+    width: 64,
+    height: 64,
+  },
+  mainActionText: {
+    marginTop: 16,
+    color: '#38BDF8',
+    fontSize: 14,
+    fontWeight: '600',
   },
   actionsGrid: {
     flexDirection: 'row',
@@ -154,10 +203,6 @@ const styles = StyleSheet.create({
   actionGradient: {
     padding: 20,
     alignItems: 'flex-start',
-  },
-  actionIcon: {
-    fontSize: 28,
-    marginBottom: 12,
   },
   actionTitle: {
     color: '#FFFFFF',
