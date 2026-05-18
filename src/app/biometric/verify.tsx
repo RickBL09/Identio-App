@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { useState, useRef } from 'react';
+import { Pressable, StyleSheet, Text, View, ActivityIndicator, Alert } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -10,15 +10,38 @@ export default function VerifyBiometricScreen() {
   const { isLoading, verify } = useBiometric();
   const [result, setResult] = useState<string | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
+  const cameraRef = useRef<CameraView>(null);
 
   const onVerify = async () => {
-    const response = await verify();
-    setResult(`${response.event_type} (score ${response.confidence_score.toFixed(2)})`);
-    
-    // After short delay, go back to home with verified state
-    setTimeout(() => {
-      router.replace({ pathname: '/(tabs)/home', params: { verified: 'true' } });
-    }, 1500);
+    if (!cameraRef.current) {
+      return;
+    }
+
+    try {
+      const photo = await cameraRef.current.takePictureAsync({
+        base64: true,
+        quality: 0.8,
+      });
+
+      if (!photo?.base64) {
+        Alert.alert('Error', 'Failed to capture photo. Please try again.');
+        return;
+      }
+
+      // Generate a session ID for this verification attempt
+      const sessionId = `session_${Date.now()}`;
+      
+      const response = await verify(photo.base64, sessionId);
+      setResult(`${response.result} (score ${response.score.toFixed(2)})`);
+      
+      // After short delay, go back to home with verified state
+      setTimeout(() => {
+        router.replace({ pathname: '/(tabs)/home', params: { verified: 'true' } });
+      }, 1500);
+    } catch (error: any) {
+      console.error('Verification error:', error);
+      Alert.alert('Verification Failed', error.message || 'Failed to verify. Please try again.');
+    }
   };
 
   if (!permission) {
@@ -52,10 +75,11 @@ export default function VerifyBiometricScreen() {
       </View>
 
       <View style={styles.cameraContainer}>
-        <CameraView style={styles.camera} facing="front" />
-        <View style={styles.overlay}>
-          <View style={styles.frame} />
-        </View>
+        <CameraView ref={cameraRef} style={styles.camera} facing="front">
+          <View style={styles.overlay}>
+            <View style={styles.frame} />
+          </View>
+        </CameraView>
       </View>
 
       <View style={styles.footer}>

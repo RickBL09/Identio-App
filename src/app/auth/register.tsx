@@ -47,7 +47,7 @@ export default function RegisterScreen() {
             <TextInput
               value={fullName}
               onChangeText={setFullName}
-              placeholder="Alejandro Toro"
+              placeholder="Jhon Doe"
               placeholderTextColor="#94A3B8"
               style={styles.input}
             />
@@ -218,4 +218,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 14,
   },
-});
+});
