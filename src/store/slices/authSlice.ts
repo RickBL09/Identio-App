@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import { AuthRepository } from '@/repositories/auth.repository';
-import type { LoginInput, RegisterInput } from '@/services/auth.service';
+import type { LoginRequestDTO, RegisterRequestDTO } from '@/api/contracts';
 import type { User } from '@/types/domain';
 
 interface AuthState {
@@ -27,14 +27,14 @@ export const initializeAuthThunk = createAsyncThunk('auth/initialize', async () 
   return token;
 });
 
-export const loginThunk = createAsyncThunk('auth/login', async (payload: LoginInput) => {
+export const loginThunk = createAsyncThunk('auth/login', async (payload: LoginRequestDTO) => {
   const response = await AuthRepository.login(payload);
   return response;
 });
 
 export const registerThunk = createAsyncThunk(
   'auth/register',
-  async (payload: RegisterInput) => {
+  async (payload: RegisterRequestDTO) => {
     const response = await AuthRepository.register(payload);
     return response;
   }

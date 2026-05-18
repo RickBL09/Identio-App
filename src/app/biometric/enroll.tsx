@@ -11,8 +11,8 @@ export default function EnrollBiometricScreen() {
   const [showCamera, setShowCamera] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const cameraRef = useRef<CameraView>(null);
-  const fadeAnim = new Animated.Value(0);
-  const translateYAnim = new Animated.Value(20);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const translateYAnim = useRef(new Animated.Value(20)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -29,7 +29,7 @@ export default function EnrollBiometricScreen() {
         useNativeDriver: true,
       })
     ]).start();
-  }, []);
+  }, [fadeAnim, translateYAnim]);
 
   const handleStartEnrollment = async () => {
     if (!permission) {

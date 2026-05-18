@@ -67,8 +67,7 @@ export default function HomeScreen() {
             />
           </View>
           
-          <Text style={styles.userName}>{user?.full_name?.toUpperCase() ?? 'ALEJANDRO TORO PINEDO'}</Text>
-          <Text style={styles.userId}>ID 200179498</Text>
+          <Text style={styles.userName}>{user?.full_name?.toUpperCase() ?? 'Jhon Doe'}</Text>
 
           <View style={styles.roleBanner}>
             <Text style={styles.roleText}>ESTUDIANTE</Text>

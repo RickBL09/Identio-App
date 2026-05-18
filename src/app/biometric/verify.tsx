@@ -6,9 +6,19 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { useBiometric } from '@/features/biometric/hooks/useBiometric';
 
+// Generate a UUID v4 compatible with Pydantic's uuid.UUID
+function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 export default function VerifyBiometricScreen() {
   const { isLoading, verify } = useBiometric();
   const [result, setResult] = useState<string | null>(null);
+  const [isMatch, setIsMatch] = useState<boolean | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
 
@@ -28,16 +38,29 @@ export default function VerifyBiometricScreen() {
         return;
       }
 
-      // Generate a session ID for this verification attempt
-      const sessionId = `session_${Date.now()}`;
+      // Generate a UUID v4 for this verification attempt
+      const sessionId = generateUUID();
       
       const response = await verify(photo.base64, sessionId);
+      const matched = response.result === 'MATCH';
+      setIsMatch(matched);
       setResult(`${response.result} (score ${response.score.toFixed(2)})`);
       
-      // After short delay, go back to home with verified state
-      setTimeout(() => {
-        router.replace({ pathname: '/(tabs)/home', params: { verified: 'true' } });
-      }, 1500);
+      // Only grant access if verification was successful
+      if (matched) {
+        setTimeout(() => {
+          router.replace({ pathname: '/(tabs)/home', params: { verified: 'true' } });
+        }, 1500);
+      } else {
+        // Show error for failed verification
+        setTimeout(() => {
+          Alert.alert(
+            'Verification Failed',
+            `Face verification failed: ${response.result}. Score: ${response.score.toFixed(2)}`,
+            [{ text: 'Try Again', onPress: () => { setResult(null); setIsMatch(null); } }]
+          );
+        }, 1500);
+      }
     } catch (error: any) {
       console.error('Verification error:', error);
       Alert.alert('Verification Failed', error.message || 'Failed to verify. Please try again.');
@@ -84,8 +107,10 @@ export default function VerifyBiometricScreen() {
 
       <View style={styles.footer}>
         {result ? (
-          <View style={styles.resultContainer}>
-            <Text style={styles.resultText}>Match: {result}</Text>
+          <View style={[styles.resultContainer, isMatch === false && styles.resultContainerError]}>
+            <Text style={[styles.resultText, isMatch === false && styles.resultTextError]}>
+              {isMatch ? '✓ ' : '✗ '}Match: {result}
+            </Text>
           </View>
         ) : null}
 
@@ -175,9 +200,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
+  resultContainerError: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#EF4444',
+  },
   resultText: {
     color: '#059669',
     fontWeight: '700',
+  },
+  resultTextError: {
+    color: '#DC2626',
   },
   button: {
     backgroundColor: '#38BDF8',
