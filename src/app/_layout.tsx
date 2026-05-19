@@ -15,15 +15,47 @@ export default function RootLayout() {
         <Stack
           screenOptions={{
             headerShown: false,
-            contentStyle: { backgroundColor: '#050814' },
             animation: 'fade',
           }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="auth" />
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="biometric/enroll" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="biometric/verify" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="nfc/scan" options={{ presentation: 'modal' }} />
+          <Stack.Screen
+            name="index"
+            options={{
+              contentStyle: { backgroundColor: '#050814' }
+            }}
+          />
+          <Stack.Screen
+            name="auth"
+            options={{
+              contentStyle: { backgroundColor: '#FFFFFF' }
+            }}
+          />
+          <Stack.Screen
+            name="(tabs)"
+            options={{
+              contentStyle: { backgroundColor: '#FFFFFF' }
+            }}
+          />
+          <Stack.Screen
+            name="biometric/enroll"
+            options={{
+              presentation: 'modal',
+              contentStyle: { backgroundColor: '#FFFFFF' }
+            }}
+          />
+          <Stack.Screen
+            name="biometric/verify"
+            options={{
+              presentation: 'modal',
+              contentStyle: { backgroundColor: '#FFFFFF' }
+            }}
+          />
+          <Stack.Screen
+            name="nfc/scan"
+            options={{
+              presentation: 'modal',
+              contentStyle: { backgroundColor: '#FFFFFF' }
+            }}
+          />
         </Stack>
       </QueryClientProvider>
     </Provider>

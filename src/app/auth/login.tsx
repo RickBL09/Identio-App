@@ -1,8 +1,6 @@
 import { Link, router } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View, Animated, Easing, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 
 import { MOCK_CREDENTIALS } from '@/mocks/data';
 import { useAuthActions } from '@/features/auth/hooks/useAuthActions';
@@ -12,8 +10,8 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const fadeAnim = new Animated.Value(0);
-  const translateYAnim = new Animated.Value(20);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const translateYAnim = useRef(new Animated.Value(20)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -30,7 +28,7 @@ export default function LoginScreen() {
         useNativeDriver: true,
       })
     ]).start();
-  }, []);
+  }, [fadeAnim, translateYAnim]);
 
   const onLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -232,4 +230,4 @@ const styles = StyleSheet.create({
     color: '#94A3B8', 
     fontSize: 12,
   },
-});
+});

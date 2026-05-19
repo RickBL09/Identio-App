@@ -5,8 +5,8 @@ export const API_ENDPOINTS = {
     refresh: '/api/v1/auth/refresh',
   },
   biometric: {
-    enroll: '/api/v1/embeddings/',
-    verify: '/api/v1/verify/',
+    enroll: '/api/v1/embeddings',
+    verify: '/api/v1/verify',
     attempts: '/api/v1/verify/attempts',
   },
   access: {
