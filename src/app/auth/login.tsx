@@ -2,7 +2,6 @@ import { Link, router } from 'expo-router';
 import { useState, useEffect, useRef } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View, Animated, Easing, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 
-import { MOCK_CREDENTIALS } from '@/mocks/data';
 import { useAuthActions } from '@/features/auth/hooks/useAuthActions';
 
 export default function LoginScreen() {
@@ -103,12 +102,6 @@ export default function LoginScreen() {
                 Face ID
               </Link>
             </View>
-          </View>
-
-          <View style={styles.hintContainer}>
-            <Text style={styles.hintText}>
-              Demo: {MOCK_CREDENTIALS.email} / {MOCK_CREDENTIALS.password}
-            </Text>
           </View>
         </Animated.View>
       </ScrollView>

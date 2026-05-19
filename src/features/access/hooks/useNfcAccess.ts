@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { AccessRepository } from '@/repositories/access.repository';
 import { nfcService } from '@/services/nfc.service';
+import { accessTokenService } from '@/services/access-token.service';
 
 export function useNfcAccess() {
   const [isLoading, setIsLoading] = useState(false);
@@ -58,6 +59,39 @@ export function useNfcAccess() {
     }
   };
 
+  const transmitAccessToken = async () => {
+    setIsLoading(true);
+    try {
+      // Verificar estado de NFC antes de transmitir
+      await checkNfcStatus();
+
+      if (!isNfcSupported) {
+        throw new Error('NFC no está soportado en este dispositivo');
+      }
+
+      if (!isNfcEnabled) {
+        throw new Error('NFC está deshabilitado. Por favor, actívalo en la configuración');
+      }
+
+      // Obtener el token de acceso
+      const token = accessTokenService.getAccessToken();
+      if (!token) {
+        throw new Error('No hay token de acceso válido. Por favor, verifica tu identidad primero.');
+      }
+
+      // Transmitir el token vía NFC
+      await nfcService.writeAccessToken(token);
+      
+      console.log('Token transmitido exitosamente vía NFC');
+      return { success: true, message: 'Token transmitido exitosamente' };
+    } catch (error) {
+      console.error('Error transmitting access token:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const openNfcSettings = async () => {
     try {
       await nfcService.openSettings();
@@ -71,6 +105,7 @@ export function useNfcAccess() {
     isNfcSupported,
     isNfcEnabled,
     scanAccess,
+    transmitAccessToken,
     checkNfcStatus,
     openNfcSettings
   };

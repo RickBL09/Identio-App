@@ -5,6 +5,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { useBiometric } from '@/features/biometric/hooks/useBiometric';
+import { accessTokenService } from '@/services/access-token.service';
 
 // Generate a UUID v4 compatible with Pydantic's uuid.UUID
 function generateUUID(): string {
@@ -48,6 +49,12 @@ export default function VerifyBiometricScreen() {
       
       // Only grant access if verification was successful
       if (matched) {
+        // Store the access token for NFC transmission if provided
+        if (response.access_token) {
+          accessTokenService.setAccessToken(response.access_token, 90);
+          console.log('Access token stored for NFC transmission');
+        }
+        
         setTimeout(() => {
           router.replace({ pathname: '/(tabs)/home', params: { verified: 'true' } });
         }, 1500);
@@ -77,7 +84,7 @@ export default function VerifyBiometricScreen() {
 
   if (!permission.granted) {
     return (
-      <View style={styles.container}>
+      <View style={styles.permissionContainer}>
         <Text style={styles.title}>Camera Access Required</Text>
         <Text style={styles.text}>We need your permission to show the camera for facial recognition.</Text>
         <Pressable style={styles.button} onPress={requestPermission}>
@@ -139,6 +146,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
+  permissionContainer: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
   header: {
     padding: 24,
     paddingTop: 60,
@@ -154,10 +168,12 @@ const styles = StyleSheet.create({
     color: '#64748B',
     fontSize: 16,
   },
-  text: { 
-    color: '#64748B', 
-    textAlign: 'center', 
-    marginBottom: 24 
+  text: {
+    color: '#64748B',
+    textAlign: 'center',
+    marginBottom: 24,
+    fontSize: 16,
+    lineHeight: 24,
   },
   cameraContainer: {
     flex: 1,

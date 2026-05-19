@@ -43,6 +43,7 @@ export interface VerifyResponseDTO {
   result: 'MATCH' | 'NO_MATCH' | 'AMBIGUOUS' | 'LOW_QUALITY';
   score: number;
   session_id: string;
+  access_token?: string; // Temporary token for NFC transmission when result is MATCH
 }
 
 export interface VerificationAttemptDTO {

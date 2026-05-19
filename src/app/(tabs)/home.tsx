@@ -1,16 +1,20 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
-import { Pressable, StyleSheet, Text, View, ScrollView } from 'react-native';
+import { Pressable, StyleSheet, Text, View, ScrollView, Alert } from 'react-native';
 import { Image } from 'expo-image';
 
 import { useAppSelector } from '@/store';
+import { accessTokenService } from '@/services/access-token.service';
+import { useNfcAccess } from '@/features/access/hooks/useNfcAccess';
 
 export default function HomeScreen() {
   const user = useAppSelector((state) => state.auth.user);
   const { verified } = useLocalSearchParams<{ verified: string }>();
+  const { transmitAccessToken, isLoading: isNfcLoading } = useNfcAccess();
   
   const [isNfcActive, setIsNfcActive] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [remainingTime, setRemainingTime] = useState(0);
 
   useEffect(() => {
     // Update date and time every second
@@ -26,11 +30,27 @@ export default function HomeScreen() {
       // Keep NFC active for 90 seconds
       const timeout = setTimeout(() => {
         setIsNfcActive(false);
+        accessTokenService.clearAccessToken();
         router.setParams({ verified: 'false' });
       }, 90000);
-      return () => clearTimeout(timeout);
+      
+      // Update remaining time every second
+      const interval = setInterval(() => {
+        const remaining = accessTokenService.getRemainingTime();
+        setRemainingTime(remaining);
+        if (remaining <= 0) {
+          setIsNfcActive(false);
+          router.setParams({ verified: 'false' });
+        }
+      }, 1000);
+      
+      return () => {
+        clearTimeout(timeout);
+        clearInterval(interval);
+      };
     } else {
       setIsNfcActive(false);
+      setRemainingTime(0);
     }
   }, [verified]);
 
@@ -81,32 +101,56 @@ export default function HomeScreen() {
 
         <View style={styles.actionSection}>
           {isNfcActive ? (
-            <View style={styles.instructionContainer}>
-              <Text style={styles.instructionText}>
-                Please hold your device near the NFC sensor to gain access.
-              </Text>
-            </View>
-          ) : null}
+            <>
+              <View style={styles.instructionContainer}>
+                <Text style={styles.instructionText}>
+                  NFC Active - Tap your device on the reader to transmit access token
+                </Text>
+                <Text style={styles.timerText}>
+                  Time remaining: {remainingTime}s
+                </Text>
+              </View>
 
-          <Pressable 
-            style={({ pressed }) => [
-              styles.mainActionButton, 
-              pressed && styles.mainActionButtonPressed,
-              isNfcActive && styles.mainActionButtonActive
-            ]} 
-            onPress={() => {
-              if (!isNfcActive) {
-                router.push('/biometric/verify');
-              }
-            }}
-          >
-            <Image 
-              source={isNfcActive ? require('@/assets/images/nfc.svg') : require('@/assets/images/facial_recognition.svg')} 
-              style={styles.actionIcon}
-              contentFit="contain"
-              tintColor={isNfcActive ? '#FFFFFF' : '#38BDF8'}
-            />
-          </Pressable>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.mainActionButton,
+                  pressed && styles.mainActionButtonPressed,
+                  styles.mainActionButtonActive
+                ]}
+                onPress={async () => {
+                  try {
+                    await transmitAccessToken();
+                    Alert.alert('Success', 'Access token transmitted successfully!');
+                  } catch (error: any) {
+                    Alert.alert('Error', error.message || 'Failed to transmit token');
+                  }
+                }}
+                disabled={isNfcLoading}
+              >
+                <Image
+                  source={require('@/assets/images/nfc.svg')}
+                  style={styles.actionIcon}
+                  contentFit="contain"
+                  tintColor="#FFFFFF"
+                />
+              </Pressable>
+            </>
+          ) : (
+            <Pressable
+              style={({ pressed }) => [
+                styles.mainActionButton,
+                pressed && styles.mainActionButtonPressed
+              ]}
+              onPress={() => router.push('/biometric/verify')}
+            >
+              <Image
+                source={require('@/assets/images/facial_recognition.svg')}
+                style={styles.actionIcon}
+                contentFit="contain"
+                tintColor="#38BDF8"
+              />
+            </Pressable>
+          )}
         </View>
 
         {/* Spacer for bottom tab bar */}
@@ -226,6 +270,13 @@ const styles = StyleSheet.create({
     color: '#0369A1',
     fontSize: 14,
     fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  timerText: {
+    color: '#0284C7',
+    fontSize: 16,
+    fontWeight: '700',
     textAlign: 'center',
   },
   mainActionButton: {
